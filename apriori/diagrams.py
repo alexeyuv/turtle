@@ -12,43 +12,57 @@ with open(filePath, mode='r', encoding='cp1251') as f:
 
 timeData = []
 suppData = []
+confData = []
 itemsData = []
 
-def RunTest(support):
+supportValue = 2 
+
+def RunTest(support, confidence):
   startTime = time.perf_counter()
 
-  apriori = Apriori(support=support, orderType=OrderType.supportDesc)
-  aprioriData = apriori.Calculate(filePath)
+  apriori = Apriori(support=support, confidence=confidence, orderType=OrderType.supportDesc)
+  calculatedCombinations, calculatedRules = apriori.Calculate(filePath)
 
   endTime = time.perf_counter()
   executionTime = endTime - startTime
 
   timeData.append(executionTime)
   suppData.append(support)
-  itemsData.append(len(aprioriData))
+  confData.append(confidence)
+  itemsData.append(len(calculatedRules))
 
   return executionTime
 
-supp1Exec = RunTest(1)
-supp1Exec = RunTest(3)
-supp1Exec = RunTest(5)
-supp1Exec = RunTest(10)
-supp1Exec = RunTest(15)
-supp1Exec = RunTest(30)
-supp1Exec = RunTest(50)
-supp1Exec = RunTest(80)
-supp1Exec = RunTest(100)
+supp1Exec = RunTest(supportValue, 1)
+supp1Exec = RunTest(supportValue, 3)
+supp1Exec = RunTest(supportValue, 5)
+supp1Exec = RunTest(supportValue, 10)
+supp1Exec = RunTest(supportValue, 15)
+supp1Exec = RunTest(supportValue, 30)
+supp1Exec = RunTest(supportValue, 50)
+supp1Exec = RunTest(supportValue, 80)
+supp1Exec = RunTest(supportValue, 100)
 
-plt.plot(suppData, timeData, linestyle='-', marker='o')
-plt.title(f"Быстродействие на фиксированном наборе данных - {totalCells} наборов")
+plt.plot(confData, timeData, linestyle='-', marker='o')
+plt.title(f"Быстродействие на фиксированном наборе данных - {totalCells} наборов", fontsize=12)
 plt.ylabel("Время обработки (сек)")
-plt.xlabel("Поддержка (%)")
+plt.xlabel("Достоверность (%)")
+plt.figtext(
+    0.6, 0.0001, 
+    f"Значение поддержки постоянно и равно {supportValue}%", 
+    horizontalalignment='right', 
+    fontsize=10, 
+    fontstyle='italic',
+    color='gray'
+)
 plt.savefig(f"{filePath}__speed-support.png")
 
 plt.clf()
 
-plt.plot(suppData, itemsData, linestyle='-', marker='o')
-plt.title(f"Частые наборы различной длины на фиксированном наборе данных - {totalCells} наборов")
+print(confData, itemsData)
+
+plt.plot(confData, itemsData, linestyle='-', marker='o')
+plt.title(f"Частые наборы различной длины на фиксированном наборе данных - {totalCells} наборов", fontsize=10)
 plt.ylabel("Частые наборы (шт)")
-plt.xlabel("Поддержка (%)")
+plt.xlabel("Достоверность (%)")
 plt.savefig(f"{filePath}__items-support.png")
