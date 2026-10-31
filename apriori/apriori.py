@@ -4,9 +4,11 @@ import math
 import itertools
 from enum import Enum
 
+
 class OrderType(Enum):
-  supportDesc = 1     
-  lexi = 2   
+  supportDesc = 1
+  lexi = 2
+
 
 class Apriori:
   def __init__(self, support, orderType, confidence):
@@ -16,11 +18,12 @@ class Apriori:
 
   def Calculate(self, src):
     self.LoadData(src)
-    
+
     lastCombinations = self.CombineItems(self.data, 1)
     lastFrequency = self.CountFrequency(self.data, lastCombinations)
-    
-    lastCombinations = [combo for combo in lastCombinations if combo in lastFrequency and self.CalculateSupport(lastFrequency[combo]) >= self.support]
+
+    lastCombinations = [combo for combo in lastCombinations if combo in lastFrequency and self.CalculateSupport(
+        lastFrequency[combo]) >= self.support]
     combinationsNumber = 2
 
     resultingCombinations = {}
@@ -30,7 +33,8 @@ class Apriori:
       resultingCombinations[item] = self.CalculateSupport(lastFrequency[item])
 
     while (True):
-      data, frequency, combinations = self.Iterate(lastFrequency, lastCombinations, combinationsNumber)
+      data, frequency, combinations = self.Iterate(
+          lastFrequency, lastCombinations, combinationsNumber)
 
       if len(data) == 0:
         break
@@ -56,9 +60,11 @@ class Apriori:
 
         for combinationSize in range(1, len(frequencyItem)):
           for combination in itertools.combinations(frequencyItem, combinationSize):
-    
+            # antecedent -> consequent
+
             antecedentFrequency = self.CountFrequency(self.data, [combination])
-            antecedentSupport = self.CalculateSupport(antecedentFrequency[combination])
+            antecedentSupport = self.CalculateSupport(
+                antecedentFrequency[combination])
 
             confidence = frequencyItemSupport / antecedentSupport
 
@@ -66,7 +72,13 @@ class Apriori:
               continue
 
             consequent = (set(frequencyItem) - set(combination))
-            rules[f"({', '.join(combination)}) => ({', '.join(consequent)})"] = confidence
+            consequentTuple = tuple(sorted(list(consequent)))
+            consequentFrequency = self.CountFrequency(self.data, [consequentTuple])
+            consequentSupport = self.CalculateSupport(consequentFrequency.get(consequentTuple, 0))
+
+            lift = confidence / consequentSupport
+
+            rules[f"({', '.join(combination)}) => ({', '.join(consequent)}) (lift = {lift:.3f})"] = confidence
 
       combinationsNumber += 1
 
